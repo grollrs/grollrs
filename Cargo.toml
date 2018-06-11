@@ -26,6 +26,6 @@ name = "main"
 path = "src/main.rs"
 
 
-[[bin]]
-name = "crypto"
-path = "src/auth/Crypto.rs"
+#[[bin]]
+#name = "crypto"
+#path = "src/auth/Crypto.rs"

@@ -62,9 +62,9 @@ impl ClientMessage for CAuthChallenge {
         let mut res = BytesMut::with_capacity(body_size).writer();
         res.write_u32::<LittleEndian>(self.build);
         res.write_u32::<LittleEndian>(0x00);
-        res.write_all(& self.account);
+        res.write_all(& *self.account.clone().into_bytes());
         res.write_u32::<LittleEndian>(0x00);
-        res.write_u32::<LittleEndian>(self.seed);
+        res.write_u32::<LittleEndian>(self.seed as u32);
         res.write_u32::<LittleEndian>(0x00);
         res.write_u32::<LittleEndian>(0x00);
         res.write_u32::<LittleEndian>(0x00);
