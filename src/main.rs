@@ -190,3 +190,64 @@ pub fn to_hex_string(bytes: Vec<u8>) -> String {
     let strs: Vec<String> = bytes.iter().map(|b| format!("{:02X}", b)).collect();
     strs.join(" ")
 }
+
+
+#[cfg(test)]
+mod tests {
+    use auth::Crypto::SRP;
+    use num::bigint::{BigInt, Sign, ToBigInt};
+    use auth::Crypto::WorldCrypt;
+
+
+    #[test]
+    fn always_true() {
+        assert_eq!(2 + 2, 4);
+    }
+
+    #[test]
+    fn test_SRP() {
+        let user = "PLAYER".to_string();
+        let pass = "PLAYER".to_string();
+
+        let srp = SRP {
+            b: BigInt::parse_bytes(
+                b"82e0fc2575616dfa7e64d6475fe080325b090eca5be40d443e1d0660835af9ee",
+                16,
+            ).unwrap(),
+            g: BigInt::parse_bytes(b"07", 16).unwrap(),
+            n: BigInt::parse_bytes(
+                b"894b645e89e1535bbdad5b8b290650530801b18ebfbf5e8fab3c82872a3e9bb7",
+                16,
+            ).unwrap(),
+            s: BigInt::parse_bytes(
+                b"15257775d01079c9814a905fbd832028ce986d855f1f18ca97c8746f65eb86b1",
+                16,
+            ).unwrap(),
+            user,
+            pass,
+        };
+
+        let a = BigInt::parse_bytes(
+            b"00000000000000000000000000861565895658c4b0118940b7245c2f264ccc72",
+            16,
+        ).unwrap();
+        let k = BigInt::parse_bytes(b"03", 16).unwrap();
+
+        let proof = srp.compute_challenge(a, k);
+
+        let mut key = BigInt::parse_bytes(b"7AB39E230475341FA69A8CE649A73E64BB6FA5B3AED0DC0F595447AF2E772BE6460CCF77F3C830C0",16,).unwrap().to_bytes_be().1;
+        key.reverse();
+
+
+        let mut crypt = WorldCrypt::new(&key);
+
+        let mut data = vec![0xe2, 0x7c, 0x26, 0xd5];  // Len: 11-15 OC: 0x01EE
+        println!("1: {:?}",data);
+        //crypt.encrypt(&mut data);
+        //println!("2: {:?}",data);
+        crypt.decrypt(&mut data);
+        //println!("3: {}",to_hex_string(data));
+        assert_eq!(2 + 2, 4);
+
+    }
+}

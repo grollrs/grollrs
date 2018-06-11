@@ -221,7 +221,7 @@ pub struct WorldCrypt{
 }
 
 impl WorldCrypt{
-    fn new(key: &Vec<u8>)->WorldCrypt{
+    pub fn new(key: &Vec<u8>)->WorldCrypt{
 
         let sessionKey = (*key).clone().to_vec();
 
@@ -262,7 +262,7 @@ impl WorldCrypt{
     }
 
 
-    fn encrypt(&mut self, data: &mut Vec<u8>){
+    pub fn encrypt(&mut self, data: &mut Vec<u8>){
         let mut buffer = vec![0; data.len()];
         {
             let mut read_buffer = RefReadBuffer::new(data);
@@ -274,7 +274,7 @@ impl WorldCrypt{
         data.write_all(&(*buffer));
     }
 
-    fn decrypt(&mut self, data: &mut Vec<u8>){
+    pub fn decrypt(&mut self, data: &mut Vec<u8>){
         let mut buffer = vec![0; data.len()];
         {
             let mut read_buffer = RefReadBuffer::new(data);
@@ -286,6 +286,8 @@ impl WorldCrypt{
         data.write_all(&(*buffer));
     }
 }
+
+
 
 /*
 
