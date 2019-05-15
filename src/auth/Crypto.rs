@@ -75,15 +75,21 @@ impl SRP {
         m.update(":".to_string().as_bytes());
         m.update(self.pass.as_bytes());
 
+        println!("Digest: {}", m.digest().bytes().iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+
         let mut n = sha1::Sha1::new();
         n.update(&self.s.to_bytes_be().1);
         n.update(&m.digest().bytes());
         let mut nd = n.digest().bytes();
+        println!("Nd: {}", nd.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+
         nd.reverse();
 
         let x = BigInt::from_bytes_be(Sign::Plus, &nd);
 
         let v = self.g.modpow(&x, &self.n);
+        println!("n: {}", self.n.to_str_radix(16));
+        println!("g: {}", self.g.to_str_radix(16));
 
         println!("v: {}", v.to_str_radix(16));
 
@@ -157,7 +163,6 @@ impl SRP {
         //interleave the digests
 
         let mut K = ds0.iter().interleave(ds1.iter()).map(|i|*i).collect::<Vec<_>>();
-        println!("K: {}", &K.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
 
         //Hash prime and generator
 
@@ -167,6 +172,8 @@ impl SRP {
         dn.update(&nc);
         let mut prime = dn.digest().bytes();
         prime.reverse();
+        println!("prime: {}", &prime.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+
 
         let mut dg =  sha1::Sha1::new();
         let mut gc = self.g.to_bytes_be().1;
@@ -174,9 +181,10 @@ impl SRP {
         dg.update(&gc);
         let mut generator = dg.digest().bytes();
         generator.reverse();
+        println!("generator: {}", &generator.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+
 
         let mut ngh = generator.iter().zip(prime.iter()).map(|i|(i.0)^(i.1)).collect::<Vec<_>>();
-        println!("ngh: {}", &ngh.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
 
         // hash identifier (username)
         let Ih = sha1::Sha1::from(self.user.clone()).digest().bytes();
@@ -185,6 +193,16 @@ impl SRP {
         //reverse all the things... actually only some...
         ngh.reverse();
         K.reverse();
+
+
+
+
+        println!("ngh: {}", &ngh.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+        println!("ih: {}", &Ih.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+        println!("s: {}", &self.s.to_bytes_be().1.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+        println!("abr: {}", &abr.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+        println!("br: {}", &br.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
+        println!("K: {}", &K.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(""));
 
         //calculate client proof M
         //M1 = H( (H(N) ^ H(G)) | H(I) | s | A | B | K )
